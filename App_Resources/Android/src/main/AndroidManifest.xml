@@ -23,6 +23,10 @@
 		android:theme="@style/AppTheme"
 		android:hardwareAccelerated="true">
 
+		<meta-data
+			android:name="com.google.android.geo.API_KEY"
+			android:value="PUT_API_KEY_HERE" />
+
 		<activity
 			android:name="com.tns.NativeScriptActivity"
 			android:label="@string/title_activity_kimera"

@@ -1,0 +1,163 @@
+diff --git a/node_modules/nativescript-danem-google-maps-utils/index.android.js b/node_modules/nativescript-danem-google-maps-utils/index.android.js
+index 8c1ed56..0c2bfde 100644
+--- a/node_modules/nativescript-danem-google-maps-utils/index.android.js
++++ b/node_modules/nativescript-danem-google-maps-utils/index.android.js
+@@ -1,6 +1,6 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+-var utils = require("tns-core-modules/utils/utils");
++var utils = require("@nativescript/core/utils");
+ var ClusterManager = com.google.maps.android.clustering.ClusterManager;
+ var DefaultClusterRenderer = com.google.maps.android.clustering.view.DefaultClusterRenderer;
+ var HeatmapTileProvider = com.google.maps.android.heatmaps.HeatmapTileProvider;
+@@ -11,7 +11,8 @@ var heatmaps = {
+     provider: "",
+     overlay: "",
+ }
+-var Image = require('@nativescript/core/ui/image');
++var imageModule = require("@nativescript/core/ui/image");
++var imageSourceModule = require('@nativescript/core/image-source');
+ 
+ function moveCamera(latitude, longitude) {
+     if (_mapView.gMap === undefined) {
+@@ -49,15 +50,24 @@ const CustomClusterItem = java.lang.Object.extend({
+ });
+ 
+ function setupMarkerCluster(mapView, markers) {
+-    console.log(mapView, markers.length)
+     _mapView = mapView
+     const CustomClusterRenderer = DefaultClusterRenderer.extend({
+         init: function () { },
+         onBeforeClusterItemRendered: function (item, markerOptions) {
+             this.super.onBeforeClusterItemRendered(item, markerOptions);
+-            var mIcon = Image;
+-            mIcon.imageSource = item.marker.icon.imageSource;
+-            var androidIcon = com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(mIcon.imageSource.android);
++
++            var icon = item.marker.infoWindowTemplate;
++            var value = null;
++            if (typeof icon === 'string') {
++                var resourceName = String(icon);
++                var imageSource = imageSourceModule.ImageSource.fromResourceSync(resourceName);
++                if (imageSource) {
++                  var image = new imageModule.Image();
++                  image.imageSource = imageSource;
++                  value = image;
++                }
++            }
++            var androidIcon = (value) ? com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(value.imageSource.android) : null;
+             markerOptions.icon(androidIcon);
+         }
+     });
+diff --git a/node_modules/nativescript-danem-google-maps-utils/index.d.ts b/node_modules/nativescript-danem-google-maps-utils/index.d.ts
+index 6f51763..2d54dec 100644
+--- a/node_modules/nativescript-danem-google-maps-utils/index.d.ts
++++ b/node_modules/nativescript-danem-google-maps-utils/index.d.ts
+@@ -1,29 +1,25 @@
+-import { Color } from "tns-core-modules/color";
++import { Color } from "@nativescript/core";
+ 
+-declare module "nativescript-danem-google-maps-utils" {
++import { MapView, Position, Marker } from "nativescript-google-maps-sdk";
+ 
+-  import { MapView, Position, Marker } from "nativescript-google-maps-sdk";
++export function enableDebug(debugFn?: ((...args: Array<any>) => any)): void;
++export function disableDebug(): void;
+ 
+-  export function enableDebug(debugFn?: ((...args: Array<any>) => any)): void;
+-  export function disableDebug(): void;
++export function setupMarkerCluster(mapView: MapView, markers: Array<Marker>): void;
+ 
+-  export function setupMarkerCluster(mapView: MapView, markers: Array<Marker>): void;
++export function moveCamera(latitude, longitude, zoom): void;
+ 
+-  export function moveCamera(latitude, longitude, zoom): void;
++export function clearMap(): void;
+ 
+-  export function clearMap(): void;
+-
+-  export interface IHeatmapConfig {
+-    provider: any;
+-    overlay: any;
+-  }
+-
+-  export function setupHeatmap(mapView: MapView, positions: Array<Position>, colors: Array<Color>, startPoints: Array<number>): IHeatmapConfig;
++export interface IHeatmapConfig {
++  provider: any;
++  overlay: any;
++}
+ 
+-  export function removeHeatmap(): void;
++export function setupHeatmap(mapView: MapView, positions: Array<Position>, colors: Array<Color>, startPoints: Array<number>): IHeatmapConfig;
+ 
+-  export function setRadius() : void;
++export function removeHeatmap(): void;
+ 
+-  export function setOpacity() : void;
++export function setRadius(val) : void;
+ 
+-}
+\ No newline at end of file
++export function setOpacity(val) : void;
+diff --git a/node_modules/nativescript-danem-google-maps-utils/index.ios.js b/node_modules/nativescript-danem-google-maps-utils/index.ios.js
+index f1f08a5..9396e17 100644
+--- a/node_modules/nativescript-danem-google-maps-utils/index.ios.js
++++ b/node_modules/nativescript-danem-google-maps-utils/index.ios.js
+@@ -4,7 +4,7 @@ var _mapView = {};
+ var heatmaps = {}
+ const imageSourceModule = require("tns-core-modules/image-source");
+ const Image = require('@nativescript/core/ui/image');
+-const utilsModule = require("tns-core-modules/utils/utils");
++const utilsModule = require("@nativescript/core/utils");
+ 
+ /***************************************** CLUSTERING *****************************************/
+ 
+@@ -38,7 +38,7 @@ var GMUClusterManagerDelegateImpl = (function (_super) {
+     GMUClusterManagerDelegateImpl.prototype.clusterManagerDidTapCluster = function (clusterManager, cluster) {
+         var owner = this._owner.get();
+         var nsArray = cluster.items;
+-        var listeMarker = utilsModule.ios.collections.nsArrayToJSArray(nsArray);
++        var listeMarker = utilsModule.iOSNativeHelper.collections.nsArrayToJSArray(nsArray);
+         _mapView.notifyMarkerTapped(listeMarker);
+         return false;
+     };
+@@ -106,14 +106,15 @@ function moveCamera(latitude, longitude, zoom) {
+ exports.moveCamera = moveCamera;
+ 
+ function clearMap() {
+-    _mapView.gMap.clear();
++    if(_mapView.gMap) {
++        _mapView.gMap.clear();
++    }
+     _mapView = {};
+ }
+ exports.clearMap = clearMap;
+ 
+ function setupMarkerCluster(mapView, markers) {
+     _mapView = mapView;
+-    console.log("*** init ios map view: ");
+     var iconGenerator = GMUDefaultClusterIconGenerator.alloc().init();
+     var algorithm = GMUNonHierarchicalDistanceBasedAlgorithm.alloc().init();
+     var renderer = GMUDefaultClusterRenderer.alloc().initWithMapViewClusterIconGenerator(mapView.nativeView, iconGenerator)
+@@ -123,13 +124,6 @@ function setupMarkerCluster(mapView, markers) {
+     clusterManager.setDelegateMapDelegate(clusterManagerDelegate, mapView);
+     var rendererDelegate = GMUClusterRendererDelegateImpl.initWithMapViewClusterIconGenerator(mapView.nativeView, iconGenerator, new WeakRef(this))
+     renderer.delegate = rendererDelegate;
+-    console.log(_mapView)
+-    console.log("clusterManagerDelegate", clusterManagerDelegate)
+-    console.log("rendererDelegate", rendererDelegate)
+-    console.log("GMUDefaultClusterIconGenerator", iconGenerator instanceof GMUDefaultClusterIconGenerator, iconGenerator); // true
+-    console.log("GMUNonHierarchicalDistanceBasedAlgorithm ", algorithm instanceof GMUNonHierarchicalDistanceBasedAlgorithm, algorithm); // true
+-    console.log("GMUDefaultClusterRenderer : ", renderer instanceof GMUDefaultClusterRenderer, renderer); // true
+-    console.log("GMUClusterManager : ", clusterManager instanceof GMUClusterManager, clusterManager); // true
+ 
+     for (var i = 0; i < markers.length; i++) {
+         var clusterItem = POIItem.alloc().initWithPositionNameImageUrlTitle(markers[i].position.ios, markers[i].userData, markers[i].infoWindowTemplate, markers[i].title)
+@@ -147,7 +141,6 @@ exports.setupMarkerCluster = setupMarkerCluster;
+ function setupHeatmap(mapView, positions, colors, startPoints) {
+     var listHeatMap = [];
+     heatmaps = GMUHeatmapTileLayer.alloc();
+-    console.log("GMUHeatmapTileLayer : ", heatmaps instanceof GMUHeatmapTileLayer, heatmaps); // true
+     heatmaps.radius = 80
+     heatmaps.opacity = 0.8
+     heatmaps.gradient = GMUGradient.alloc().initWithColorsStartPointsColorMapSize(

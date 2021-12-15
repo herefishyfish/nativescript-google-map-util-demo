@@ -1,0 +1,407 @@
+diff --git a/node_modules/nativescript-google-maps-sdk/map-view-common.js b/node_modules/nativescript-google-maps-sdk/map-view-common.js
+index bbbed7d..15b49b2 100644
+--- a/node_modules/nativescript-google-maps-sdk/map-view-common.js
++++ b/node_modules/nativescript-google-maps-sdk/map-view-common.js
+@@ -1,4 +1,4 @@
+-import { Style } from "./map-view";
++import { StyleBase as Style } from "./map-view";
+ import { View, Image, LayoutBase, Property, Color, Builder, eachDescendant, ProxyViewContainer, StackLayout } from "@nativescript/core";
+ function onInfoWindowTemplatesChanged(mapView) {
+     let _infoWindowTemplates = new Array();
+diff --git a/node_modules/nativescript-google-maps-sdk/map-view.ios.js b/node_modules/nativescript-google-maps-sdk/map-view.ios.js
+index 0272d64..6bc44af 100644
+--- a/node_modules/nativescript-google-maps-sdk/map-view.ios.js
++++ b/node_modules/nativescript-google-maps-sdk/map-view.ios.js
+@@ -2,19 +2,23 @@ import { MapViewBase, BoundsBase, CircleBase, MarkerBase, PolygonBase, PolylineB
+ import { GC, layout } from "@nativescript/core/utils";
+ import { Image, ImageSource } from "@nativescript/core";
+ export * from "./map-view-common";
+-let IndoorDisplayDelegateImpl = IndoorDisplayDelegateImpl_1 = class IndoorDisplayDelegateImpl extends NSObject {
+-    static initWithOwner(owner) {
+-        let handler = IndoorDisplayDelegateImpl_1.new();
++var IndoorDisplayDelegateImpl = /** @class */ (function (_super) {
++    __extends(IndoorDisplayDelegateImpl, _super);
++    function IndoorDisplayDelegateImpl() {
++        return _super !== null && _super.apply(this, arguments) || this;
++    }
++    IndoorDisplayDelegateImpl.initWithOwner = function (owner) {
++        var handler = IndoorDisplayDelegateImpl.new();
+         handler._owner = owner;
+         return handler;
+-    }
+-    didChangeActiveBuilding(indoorBuilding) {
+-        let owner = this._owner.get();
++    };
++    IndoorDisplayDelegateImpl.prototype.didChangeActiveBuilding = function (indoorBuilding) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let data = null;
++            var data = null;
+             if (indoorBuilding) {
+-                const levels = [];
+-                let count = 0;
++                var levels = [];
++                var count = 0;
+                 while (count < indoorBuilding.levels.count) {
+                     levels.push({
+                         name: indoorBuilding.levels[count].name,
+@@ -30,11 +34,11 @@ let IndoorDisplayDelegateImpl = IndoorDisplayDelegateImpl_1 = class IndoorDispla
+             }
+             owner.notifyBuildingFocusedEvent(data);
+         }
+-    }
+-    didChangeActiveLevel(activateLevel) {
+-        let owner = this._owner.get();
++    };
++    IndoorDisplayDelegateImpl.prototype.didChangeActiveLevel = function (activateLevel) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let data = null;
++            var data = null;
+             if (activateLevel) {
+                 data = {
+                     name: activateLevel.name,
+@@ -43,23 +47,25 @@ let IndoorDisplayDelegateImpl = IndoorDisplayDelegateImpl_1 = class IndoorDispla
+             }
+             owner.notifyIndoorLevelActivatedEvent(data);
+         }
+-    }
+-};
+-IndoorDisplayDelegateImpl.ObjCProtocols = [GMSIndoorDisplayDelegate];
+-IndoorDisplayDelegateImpl = IndoorDisplayDelegateImpl_1 = __decorate([
+-    NativeClass()
+-], IndoorDisplayDelegateImpl);
+-let MapViewDelegateImpl = MapViewDelegateImpl_1 = class MapViewDelegateImpl extends NSObject {
+-    static initWithOwner(owner) {
+-        let handler = MapViewDelegateImpl_1.new();
++    };
++    IndoorDisplayDelegateImpl.ObjCProtocols = [GMSIndoorDisplayDelegate];
++    return IndoorDisplayDelegateImpl;
++}(NSObject));
++var MapViewDelegateImpl = /** @class */ (function (_super) {
++    __extends(MapViewDelegateImpl, _super);
++    function MapViewDelegateImpl() {
++        return _super !== null && _super.apply(this, arguments) || this;
++    }
++    MapViewDelegateImpl.initWithOwner = function (owner) {
++        var handler = MapViewDelegateImpl.new();
+         handler._owner = owner;
+         return handler;
+-    }
+-    mapViewIdleAtCameraPosition(mapView, cameraPosition) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewIdleAtCameraPosition = function (mapView, cameraPosition) {
++        var owner = this._owner.get();
+         if (owner) {
+             owner._processingCameraEvent = true;
+-            let cameraChanged = false;
++            var cameraChanged = false;
+             if (owner.latitude != cameraPosition.target.latitude) {
+                 cameraChanged = true;
+                 latitudeProperty.nativeValueChange(owner, cameraPosition.target.latitude);
+@@ -91,9 +97,9 @@ let MapViewDelegateImpl = MapViewDelegateImpl_1 = class MapViewDelegateImpl exte
+             }
+             owner._processingCameraEvent = false;
+         }
+-    }
+-    mapViewDidChangeCameraPosition(mapView, cameraPosition) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidChangeCameraPosition = function (mapView, cameraPosition) {
++        var owner = this._owner.get();
+         owner.notifyCameraEvent(MapViewBase.cameraMoveEvent, {
+             latitude: cameraPosition.target.latitude,
+             longitude: cameraPosition.target.longitude,
+@@ -101,101 +107,102 @@ let MapViewDelegateImpl = MapViewDelegateImpl_1 = class MapViewDelegateImpl exte
+             bearing: cameraPosition.bearing,
+             tilt: cameraPosition.viewingAngle
+         });
+-    }
+-    mapViewDidTapAtCoordinate(mapView, coordinate) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidTapAtCoordinate = function (mapView, coordinate) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let position = Position.positionFromLatLng(coordinate.latitude, coordinate.longitude);
++            var position = Position.positionFromLatLng(coordinate.latitude, coordinate.longitude);
+             owner.notifyPositionEvent(MapViewBase.coordinateTappedEvent, position);
+         }
+-    }
+-    mapViewDidLongPressAtCoordinate(mapView, coordinate) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidLongPressAtCoordinate = function (mapView, coordinate) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let position = Position.positionFromLatLng(coordinate.latitude, coordinate.longitude);
++            var position = Position.positionFromLatLng(coordinate.latitude, coordinate.longitude);
+             owner.notifyPositionEvent(MapViewBase.coordinateLongPressEvent, position);
+         }
+-    }
+-    mapViewDidTapMarker(mapView, gmsMarker) {
+-        const owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidTapMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             if (marker) {
+                 owner.notifyMarkerTapped(marker);
+             }
+         }
+         return false;
+-    }
+-    mapViewDidTapOverlay(mapView, gmsOverlay) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidTapOverlay = function (mapView, gmsOverlay) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let shape = owner.findShape((shape) => shape.ios == gmsOverlay);
++            var shape = owner.findShape(function (shape) { return shape.ios == gmsOverlay; });
+             if (shape) {
+                 owner.notifyShapeTapped(shape);
+             }
+         }
+-    }
+-    mapViewDidBeginDraggingMarker(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidBeginDraggingMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             owner.notifyMarkerBeginDragging(marker);
+         }
+-    }
+-    mapViewDidEndDraggingMarker(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidEndDraggingMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             owner.notifyMarkerEndDragging(marker);
+         }
+-    }
+-    mapViewDidDragMarker(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidDragMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             owner.notifyMarkerDrag(marker);
+         }
+-    }
+-    mapViewDidTapInfoWindowOfMarker(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidTapInfoWindowOfMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             owner.notifyMarkerInfoWindowTapped(marker);
+         }
+-    }
+-    mapViewDidCloseInfoWindowOfMarker(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewDidCloseInfoWindowOfMarker = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (owner) {
+-            let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++            var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+             owner.notifyMarkerInfoWindowClosed(marker);
+         }
+-    }
+-    didTapMyLocationButtonForMapView(mapView) {
+-        const owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.didTapMyLocationButtonForMapView = function (mapView) {
++        var owner = this._owner.get();
+         if (owner) {
+             owner.notifyMyLocationTapped();
++            // Should return false in order to center the map on user position
+             return false;
+         }
+         return true;
+-    }
+-    mapViewMarkerInfoWindow(mapView, gmsMarker) {
++    };
++    MapViewDelegateImpl.prototype.mapViewMarkerInfoWindow = function (mapView, gmsMarker) {
+         return null;
+-    }
+-    mapViewMarkerInfoContents(mapView, gmsMarker) {
+-        let owner = this._owner.get();
++    };
++    MapViewDelegateImpl.prototype.mapViewMarkerInfoContents = function (mapView, gmsMarker) {
++        var owner = this._owner.get();
+         if (!owner)
+             return null;
+-        let marker = owner.findMarker((marker) => marker.ios == gmsMarker);
++        var marker = owner.findMarker(function (marker) { return marker.ios == gmsMarker; });
+         var content = owner._getMarkerInfoWindowContent(marker);
+         if (content) {
+-            let width = Number(content.width);
++            var width = Number(content.width);
+             if (Number.isNaN(width))
+                 width = null;
+-            let height = Number(content.height);
++            var height = Number(content.height);
+             if (Number.isNaN(height))
+                 height = null;
+             if (!height || !width) {
+-                const bounds = UIScreen.mainScreen.bounds;
++                var bounds = UIScreen.mainScreen.bounds;
+                 width = width || (bounds.size.width * .7);
+                 height = height || (bounds.size.height * .4);
+             }
+@@ -203,27 +210,28 @@ let MapViewDelegateImpl = MapViewDelegateImpl_1 = class MapViewDelegateImpl exte
+             return content.ios;
+         }
+         return null;
+-    }
+-    _layoutRootView(rootView, parentBounds) {
++    };
++    /*
++        Replacement for _layoutRootView method removed in NativeScript 6
++    */
++    MapViewDelegateImpl.prototype._layoutRootView = function (rootView, parentBounds) {
+         if (!rootView || !parentBounds) {
+             return;
+         }
+-        const size = parentBounds.size;
+-        const width = layout.toDevicePixels(size.width);
+-        const height = layout.toDevicePixels(size.height);
+-        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+-        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
++        var size = parentBounds.size;
++        var width = layout.toDevicePixels(size.width);
++        var height = layout.toDevicePixels(size.height);
++        var widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
++        var heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+         rootView.measure(widthSpec, heightSpec);
+-        const origin = parentBounds.origin;
+-        const left = origin.x;
+-        const top = origin.y;
++        var origin = parentBounds.origin;
++        var left = origin.x;
++        var top = origin.y;
+         rootView.layout(left, top, width, height);
+-    }
+-};
+-MapViewDelegateImpl.ObjCProtocols = [GMSMapViewDelegate];
+-MapViewDelegateImpl = MapViewDelegateImpl_1 = __decorate([
+-    NativeClass()
+-], MapViewDelegateImpl);
++    };
++    MapViewDelegateImpl.ObjCProtocols = [GMSMapViewDelegate];
++    return MapViewDelegateImpl;
++}(NSObject));
+ export class MapView extends MapViewBase {
+     constructor() {
+         super();
+@@ -384,12 +392,12 @@ export class MapView extends MapViewBase {
+     }
+ }
+ export class UISettings {
+-    get ios() {
+-        return this._ios;
+-    }
+     constructor(ios) {
+         this._ios = ios;
+     }
++    get ios() {
++        return this._ios;
++    }
+     get compassEnabled() {
+         return this._ios.compassButton;
+     }
+@@ -448,6 +456,10 @@ export class UISettings {
+     }
+ }
+ export class Projection extends ProjectionBase {
++    constructor(ios) {
++        super();
++        this._ios = ios;
++    }
+     get ios() {
+         return this._ios;
+     }
+@@ -465,12 +477,12 @@ export class Projection extends ProjectionBase {
+             y: cgPoint.y
+         };
+     }
++}
++export class VisibleRegion extends VisibleRegionBase {
+     constructor(ios) {
+         super();
+         this._ios = ios;
+     }
+-}
+-export class VisibleRegion extends VisibleRegionBase {
+     get ios() {
+         return this._ios;
+     }
+@@ -489,12 +501,12 @@ export class VisibleRegion extends VisibleRegionBase {
+     get bounds() {
+         return new Bounds(GMSCoordinateBounds.alloc().initWithRegion(this.ios));
+     }
++}
++export class Bounds extends BoundsBase {
+     constructor(ios) {
+         super();
+         this._ios = ios;
+     }
+-}
+-export class Bounds extends BoundsBase {
+     get ios() {
+         return this._ios;
+     }
+@@ -504,15 +516,15 @@ export class Bounds extends BoundsBase {
+     get northeast() {
+         return new Position(this._ios.northEast);
+     }
+-    constructor(ios) {
+-        super();
+-        this._ios = ios;
+-    }
+     static fromCoordinates(southwest, northeast) {
+         return new Bounds(GMSCoordinateBounds.alloc().initWithCoordinateCoordinate(southwest.ios, northeast.ios));
+     }
+ }
+ export class Position extends PositionBase {
++    constructor(ios) {
++        super();
++        this._ios = ios || CLLocationCoordinate2DMake(0, 0);
++    }
+     get ios() {
+         return this._ios;
+     }
+@@ -528,10 +540,6 @@ export class Position extends PositionBase {
+     set longitude(longitude) {
+         this._ios = CLLocationCoordinate2DMake(this.latitude, longitude);
+     }
+-    constructor(ios) {
+-        super();
+-        this._ios = ios || CLLocationCoordinate2DMake(0, 0);
+-    }
+     static positionFromLatLng(latitude, longitude) {
+         let position = new Position();
+         position.latitude = latitude;
+@@ -828,4 +836,3 @@ export class Circle extends CircleBase {
+         return this._ios;
+     }
+ }
+-var IndoorDisplayDelegateImpl_1, MapViewDelegateImpl_1;
+diff --git a/node_modules/nativescript-google-maps-sdk/platforms/android/nativescript_google_maps_sdk.aar b/node_modules/nativescript-google-maps-sdk/platforms/android/nativescript_google_maps_sdk.aar
+index a6c2cdb..832482f 100644
+Binary files a/node_modules/nativescript-google-maps-sdk/platforms/android/nativescript_google_maps_sdk.aar and b/node_modules/nativescript-google-maps-sdk/platforms/android/nativescript_google_maps_sdk.aar differ
